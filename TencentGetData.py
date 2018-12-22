@@ -125,7 +125,6 @@ class TencentGetData():
         temp_fund_list = deepcopy(self.fund_list)
         self.organised_fund_list = []
         i = 0
-        j = 1
         for j in range(1, len(temp_fund_list)):
             if temp_fund_list[i].name == temp_fund_list[j].name:
                 temp_fund_list[i].total_value += temp_fund_list[j].total_value
@@ -199,48 +198,11 @@ class TencentGetData():
             fund_table = self.new_fund_list[i].createTable(self.date)
             fund_table.to_excel(writer,'%s'%self.new_fund_list[i].name)
         writer.save()
-            
-        '''
-        repeated_fund_times = 0
-        for i in range(0,len(self.new_fund_list)):
-            fund_table = self.new_fund_list[i].createTable(self.date)
-            if i == 0:
-                fund_table.to_excel(writer,'%s'%self.new_fund_list[i].name)   
-            if i != 0:
-                if self.new_fund_list[i].name == self.new_fund_list[i-1].name:
-                    repeated_fund_times += 1
-                    fund_table.to_excel(writer,'%s%d'%(self.new_fund_list[i].name,repeated_fund_times))
-                else:
-                    repeated_fund_times = 0
-                    fund_table.to_excel(writer,'%s'%self.new_fund_list[i].name)
-        writer.save()
-        '''
+        
     def updateTable(self):
         existing_workbook = openpyxl.load_workbook('/Users/YoYo/Desktop/智能记账/Tencent.xlsx')
         updated_table_list = []
         sheet_name_list = []
-        '''
-        for i in range(0, len(self.existing_fund_list)):
-            if i == 0:
-                sheet_name = '%s'%self.existing_fund_list[i].name
-            if i != 0:
-                if self.existing_fund_list[i].name == self.existing_fund_list[i-1].name:
-                    repeated_fund_times += 1
-                    fund_table_new = self.existing_fund_list[i].createTable(self.date)
-                    #sheet_name = '%s%d'%(self.existing_fund_list[i].name, repeated_fund_times)
-                else:
-                    repeated_fund_times = 0
-                    sheet_name = '%s'%self.existing_fund_list[i].name
-                    
-            current_worksheet = existing_workbook[sheet_name]
-            fund_table_old = pd.read_excel('/Users/YoYo/Desktop/智能记账/Tencent.xlsx', sheet_name=sheet_name, index_col=0)
-            existing_workbook.remove(current_worksheet)
-            #fund_table_new = self.existing_fund_list[i].createTable(self.date)
-            fund_table = pd.concat([fund_table_old,fund_table_new])
-            updated_table_list.append(fund_table)
-            sheet_name_list.append(sheet_name)
-
-        '''
         for i in range(0, len(self.existing_fund_list)):
             sheet_name = '%s'%self.existing_fund_list[i].name
             print(sheet_name)
@@ -272,39 +234,4 @@ if __name__ == '__main__':
         except:
             pass
         start_date = (pd.to_datetime(start_date)+timedelta(1)).strftime('%Y-%m-%d')
-'''
-    for i in ['2018-12-15','2018-12-11']: #'2018-12-07','2018-12-10'
-        TencentGetData(i)
-    
-'''
-
-
-
-
-
-'''
-
-self.fund_name_list = self.soup.find('div', 'box-etf') 
-self.fund_name_list.find('div','c-box')
-
-
-current_node = self.soup.find(text="9000098") # 定位产品编号的位置节点
-parent_node = a_string.find_parent('div','c-box')
-parent_node.find_next('p','num').get_text() # 下一个最近的符合参数的目标
-parent_node.find_next('p','num ').get_text()
-
-
-float_pnl_list = self.soup.select('p[class="num f-red"]')
-for i in self.fund_list:
-    if self.fund_list[i] = 
-    names['fund%d'%(i+1)].currentTotalValue(total_amount)
-    names['fund%d'%(i+1)].yesterdayPnL(yes_pnl)
-
-
-
-for i in self.soup.find_all(name='p',attrs={"class":"num"}): #所有的相关数字
-    txt = i.get_text()
-    split_txt = txt.split(' ')
-    print(i.get_text())
-'''
 
