@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Created on Tue Mar 19 13:19:15 2019
+
+@author: YoYo
+"""
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
 Created on Sat Dec  8 18:34:43 2018
 
 @author: YoYo
@@ -51,29 +59,44 @@ class Fund():
         
 
 
-
-class StableFund(Fund):
+#----------保险理财产品----------#
+class SecureFund(Fund):
     
     def __init__(self, name, fund_id):
         super().__init__(name, fund_id)
         
-    def currentPeriodPnL(self, current_period_pnl):
+    def currentPeriodPnL(self, current_period_pnl): #当期累计收益
         self.current_period_pnl = current_period_pnl
     
-    def maturityDate(self, maturity_date):
+    def maturityDate(self, maturity_date): #到期时间
         self.maturity_date = maturity_date
-        #today_date = pd.to_datetime(time.strftime('%Y-%m-%d',time.localtime(time.time())))
-        #self.day_to_maturity = (pd.to_datetime(self.maturity_date) - today_date).days
     
-    def profitPer1w(self, profit_per_1w):
-        self.profit_per_1w = profit_per_1w
+    def day2maturity(self, day_to_maturity): #离本期结束时间
+        self.day_to_maturity = day_to_maturity
     
-    def yesterdayPnL(self):
-        yest_profit_loss = self.profit_per_1w * self.total_value/10000
-        return yest_profit_loss
+    def duration(self, duration): #产品持有周期
+        self.duration = duration
+    
+    def yesterdayPnL(self): #昨日收益(平均估计值)
+        try:
+            yest_profit_loss = self.current_period_pnl / (self.duration - self.day_to_maturity)
+        except:
+            yest_profit_loss = 0
+        return round(yest_profit_loss, 3)
     
     def realTimeROA(self):
-        roa = (1 + self.profit_per_1w/10000)**self.calculate_day - 1
+        try:
+            roa = (1 + self.yest_profit_loss/self.total_value) ** self.calculate_day - 1
+        except AttributeError:
+            try:
+                roa = (1 + self.yesterdayPnL()/self.total_value) ** self.calculate_day - 1
+            except ZeroDivisionError:
+                roa = 0
+#        try:
+#            daily_return = (self.current_period_pnl / (self.duration - self.day_to_maturity)) / self.total_value
+#            roa = (1 + daily_return)**self.calculate_day - 1
+#        except:
+#            roa = 0
         return round(roa*100, 2)
     
     def displayKeyDetails(self):
@@ -81,7 +104,10 @@ class StableFund(Fund):
         print('产品编号: ', self.fund_id)
         print('到期时间： ', self.maturity_date)
         print('资产市值: ', self.total_value)
-        print('昨日浮动盈亏: ', round(self.yesterdayPnL(),3))
+        try:
+            print('昨日浮动盈亏: ', self.yest_profit_loss)
+        except:
+            print('昨日浮动盈亏: ', self.yesterdayPnL())
         print('当期累计盈亏: ', self.current_period_pnl)
         print('实时年化收益: ', self.realTimeROA())
     
@@ -93,7 +119,7 @@ class StableFund(Fund):
         
         return table.T
     
-        
+#----------指数基金----------#
 class ETFFund(Fund):
 
     def __init__(self, name, fund_id):
@@ -117,9 +143,10 @@ class ETFFund(Fund):
         table[date] = [self.total_value, self.yest_profit_loss, self.cum_profit_loss, self.realTimeROA()]
         
         return table.T
-             
 
-class SecureFund(Fund):
+
+#----------货币基金理财产品----------#
+class StableFund(Fund): 
     
     def __init__(self, name, fund_id):
         super().__init__(name, fund_id)

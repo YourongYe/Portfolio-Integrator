@@ -14,6 +14,9 @@ import os
 import Config
 from datetime import timedelta
 from bs4 import BeautifulSoup
+import tkinter.messagebox
+
+#文件问题：如果基金全部平仓了，那asset table也没法更新
 
 class BankGetData():
     
@@ -52,6 +55,7 @@ class BankGetData():
         if self.existing_fund_list:
             self.updateFundTable()
         self.updateProductTable()
+        print('Update %s data successful'%self.date)
     
     def getAssetDetails(self):
         self.total_asset = float(self.soup.find('div','asset').find('span').get_text().replace(',', ''))
@@ -127,7 +131,14 @@ class BankGetData():
             i.displayKeyDetails()    
     
     def identifyNewFund(self):
-        new_product_No_str = input("新买入理财产品编号为(请填从1开始的数字): ")
+        execute_bool = False
+        root = tkinter.Tk()
+        root.withdraw()
+        execute_bool = tkinter.messagebox.askyesno('My Bank Investment', 'Any new investment?')
+        if execute_bool == True:
+            new_product_No_str = input("新买入理财产品编号为(请填从1开始的数字): ")
+        else:
+            new_product_No_str = '0'
         if new_product_No_str == '0': # 如果当天没有新的基金的话就填0
             self.new_product_list = None
             self.existing_product_list = self.fixed_products_list      
@@ -150,8 +161,10 @@ class BankGetData():
             for i in existing_product_No:   
                 existing_product = self.fixed_products_list[i - 1]
                 self.existing_product_list.append(existing_product)
-                
-        new_fund_No_str = input("新买入基金编号为(请填从1开始的数字): ") # input为类似 1,4,5
+        if execute_bool == True:
+            new_fund_No_str = input("新买入基金编号为(请填从1开始的数字): ")
+        else:
+            new_fund_No_str = '0'
         if new_fund_No_str == '0': # 如果当天没有新的基金的话就填0
             self.new_fund_list = None
             self.existing_fund_list = self.fund_list      
@@ -260,7 +273,7 @@ class BankGetData():
                 writer.save()
 
 if __name__ == '__main__':
-    
+    '''
     start_date = '2019-01-03'
     while start_date <= time.strftime('%Y-%m-%d',time.localtime(time.time())):
         try:
@@ -277,7 +290,13 @@ if __name__ == '__main__':
         except:
             pass
         start_date = (pd.to_datetime(start_date)+timedelta(1)).strftime('%Y-%m-%d')
-
+    '''
+    
+    start_date = None
+    BankGetData(start_date)
+    BankGetData(start_date, card='small')
+    
+    
 
 
 

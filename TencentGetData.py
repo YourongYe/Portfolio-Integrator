@@ -6,16 +6,9 @@ Created on Tue Mar 19 12:54:04 2019
 @author: YoYo
 """
 
-
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Dec  8 12:27:35 2018
-
-@author: YoYo
-"""
 import pandas as pd
 from bs4 import BeautifulSoup
-import Fund_new
+import Fund
 import re
 import time
 import openpyxl
@@ -97,7 +90,7 @@ class TencentGetData():
             #----------------根据不同基金种类，拿到每个基金的details数据------------------#
             names = locals()
             if current_node.find_parent('div','box-etf'):  
-                names['fund%d'%(i+1)] = Fund_new.ETFFund(self.fund_name_list[i],self.fund_ID_list[i])
+                names['fund%d'%(i+1)] = Fund.ETFFund(self.fund_name_list[i],self.fund_ID_list[i])
                 self.fund_list.append(names['fund%d'%(i+1)])
                 total_value_node = parent_node.find('div','col-div col-1')
                 yest_profit_loss_node = parent_node.find('div','col-div col-2')
@@ -120,7 +113,7 @@ class TencentGetData():
                 names['fund%d'%(i+1)].calculate_day = 252
             
             if current_node.find_parent(id='fixed_fund_list'): #保险理财产品
-                names['fund%d'%(i+1)] = Fund_new.SecureFund(self.fund_name_list[i],self.fund_ID_list[i])
+                names['fund%d'%(i+1)] = Fund.SecureFund(self.fund_name_list[i],self.fund_ID_list[i])
                 self.fund_list.append(names['fund%d'%(i+1)])
                 total_value_node = parent_node.find('div','col-div col-1')
 #                yest_profit_loss_node = parent_node.find('div','col-div col-2')
@@ -141,7 +134,7 @@ class TencentGetData():
                 names['fund%d'%(i+1)].calculate_day = 360
             
             if current_node.find_parent(id='coin_fund_list'): #货币基金
-                names['fund%d'%(i+1)] = Fund_new.StableFund(self.fund_name_list[i],self.fund_ID_list[i])
+                names['fund%d'%(i+1)] = Fund.StableFund(self.fund_name_list[i],self.fund_ID_list[i])
                 self.fund_list.append(names['fund%d'%(i+1)])
                 total_value_node = parent_node.find('div','col-div col-1')
                 yest_profit_loss_node = parent_node.find('div','col-div col-2')
@@ -171,9 +164,10 @@ class TencentGetData():
             if temp_fund_list[i].name == temp_fund_list[j].name:
                 temp_fund_list[i].total_value += temp_fund_list[j].total_value
                 try:
-                    temp_fund_list[i].yest_profit_loss += temp_fund_list[j].yest_profit_loss
-                except:
-                    pass #stable fund的昨日浮动盈亏由万份收益和总市值计算得到，所以不需要累加
+                    temp_fund_list[i].yest_profit_loss += temp_fund_list[j].yesterdayPnL()
+                except AttributeError:
+                    temp_fund_list[i].yest_profit_loss = temp_fund_list[i].yesterdayPnL()
+                    temp_fund_list[i].yest_profit_loss += temp_fund_list[j].yesterdayPnL()
                 try:
                     temp_fund_list[i].cum_profit_loss += temp_fund_list[j].cum_profit_loss
                 except:
@@ -193,18 +187,18 @@ class TencentGetData():
         self.fix_income_yes_pnl = 0
         self.float_income_yes_pnl = 0
         for i in self.organised_fund_list:
-            if isinstance(i, Fund_new.SecureFund):
+            if isinstance(i, Fund.SecureFund):
                 self.fix_income_yes_pnl += i.yesterdayPnL()
-            if isinstance(i, Fund_new.StableFund):
+            if isinstance(i, Fund.StableFund):
                 self.fix_income_yes_pnl += i.yest_profit_loss
-            if isinstance(i, Fund_new.ETFFund):
+            if isinstance(i, Fund.ETFFund):
                 self.float_income_yes_pnl += i.yest_profit_loss
     
     def identifyNewFund(self):
         execute_bool = False
         root = tkinter.Tk()
         root.withdraw()
-        execute_bool = tkinter.messagebox.askyesno('Money!Money!', 'Anything new?')
+        execute_bool = tkinter.messagebox.askyesno('Tencent Investment', 'Any new investment?')
         if execute_bool == True:
             new_fund_No_str = input("新买入基金编号为(请填从1开始的数字): ") # input为类似 1,4,5
         else:
